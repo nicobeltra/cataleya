@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Product, Category } from '@/lib/types';
 import { useCart } from '@/components/CartContext';
 
@@ -46,11 +47,17 @@ export default function ProductDetailClient({
   return (
     <>
       <div className="max-w-[1400px] mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-        {/* COLUMNA IZQUIERDA: Imágenes */}
         <div className="md:sticky md:top-24 md:self-start">
-          <div className="aspect-[3/4] bg-cream overflow-hidden mb-3">
+          <div className="aspect-[3/4] bg-cream overflow-hidden mb-3 relative">
             {mainImage ? (
-              <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
+              <Image
+                src={mainImage}
+                alt={product.name}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
             ) : (
               <div className={`ph ${phClass}`}>
                 <span className="ph-label">{product.name}</span>
@@ -58,23 +65,27 @@ export default function ProductDetailClient({
             )}
           </div>
 
-          {/* Miniaturas si hay más de 1 imagen */}
           {hasImages && product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {product.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className={`aspect-square bg-cream overflow-hidden border ${i === activeImg ? 'border-rose' : 'border-transparent'}`}
+                  className={`aspect-square bg-cream overflow-hidden border relative ${i === activeImg ? 'border-rose' : 'border-transparent'}`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <Image
+                    src={img}
+                    alt=""
+                    fill
+                    sizes="100px"
+                    className="object-cover"
+                  />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* COLUMNA DERECHA: Info */}
         <div className="py-5">
           <div className="text-[11px] tracking-[3px] uppercase text-gray mb-5">
             <Link href="/" className="hover:text-rose">Inicio</Link> /{' '}
