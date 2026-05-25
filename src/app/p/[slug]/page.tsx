@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPageBySlug } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 function renderContent(content: string): string {
   return content
