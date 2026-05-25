@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getProductBySlug, supabase } from '@/lib/supabase';
 import ProductDetailClient from './ProductDetailClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 function phClass(id: string): string {
   let sum = 0;
