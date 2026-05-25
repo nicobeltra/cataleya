@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getCategories, getFeaturedProducts, getSiteConfig, getActiveBanners } from '@/lib/supabase';
 import ProductCard from '@/components/ProductCard';
 import BannerCarousel from '@/components/BannerCarousel';
@@ -7,7 +8,7 @@ function phClass(order: number): string {
   return `ph-${(order % 10) + 1}`;
 }
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function Home() {
   const [categories, featured, config, banners] = await Promise.all([
@@ -48,9 +49,15 @@ export default async function Home() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {categories.map((c) => (
             <Link key={c.id} href={`/categoria/${c.slug}`} className="relative aspect-[3/4] overflow-hidden block group">
-              <div className={`ph ${phClass(c.order)} transition-transform duration-700 group-hover:scale-105`}>
+              <div className={`ph ${phClass(c.order)} transition-transform duration-700 group-hover:scale-105 relative w-full h-full`}>
                 {c.image_url ? (
-                  <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                  <Image
+                    src={c.image_url}
+                    alt={c.name}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="object-cover"
+                  />
                 ) : (
                   <span className="ph-label">{c.name}</span>
                 )}
