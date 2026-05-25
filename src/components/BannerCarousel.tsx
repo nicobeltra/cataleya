@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Banner } from '@/lib/types';
 
 export default function BannerCarousel({ banners }: { banners: Banner[] }) {
@@ -12,7 +13,6 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
     return () => clearInterval(t);
   }, [banners.length]);
 
-  // SIN banners cargados — fallback simple
   if (banners.length === 0) {
     return (
       <section className="relative min-h-[70vh] md:min-h-[85vh] bg-gradient-to-br from-rose-pale via-cream to-white flex items-center justify-center px-6 py-20">
@@ -34,22 +34,22 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   const current = banners[index];
   const hasLink = !!current.cta_link;
 
-  // Wrapper que hace clickeable todo el banner si hay link
   const BannerContent = (
     <div className="relative w-full h-full min-h-[60vh] md:min-h-[85vh] overflow-hidden cursor-pointer">
-      {/* Imágenes apiladas con fade */}
       {banners.map((b, i) => (
-        <img
+        <Image
           key={b.id}
           src={b.image_url}
           alt={b.title || ''}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === index ? 'opacity-100' : 'opacity-0'}`}
+          fill
+          priority={i === 0}
+          sizes="100vw"
+          className={`object-cover transition-opacity duration-700 ${i === index ? 'opacity-100' : 'opacity-0'}`}
         />
       ))}
 
-      {/* Overlay con textos */}
       {(current.title || current.subtitle || current.eyebrow) && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent flex items-end md:items-center">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent flex items-end md:items-center z-10">
           <div className="w-full md:w-1/2 px-6 md:px-16 py-10 md:py-20 text-white">
             {current.eyebrow && (
               <div key={`eb-${index}`} className="text-[11px] tracking-[4px] uppercase mb-4 animate-fadeup-1">
@@ -75,7 +75,6 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
         </div>
       )}
 
-      {/* Dots de navegación */}
       {banners.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {banners.map((_, i) => (
