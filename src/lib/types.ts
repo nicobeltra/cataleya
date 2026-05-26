@@ -35,6 +35,8 @@ export type Banner = {
   cta_text: string | null;
   cta_link: string | null;
   image_url: string;
+  image_url_mobile: string | null;
+  image_url_desktop: string | null;
   active: boolean;
   order: number;
 };
