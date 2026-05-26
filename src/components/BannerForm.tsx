@@ -10,7 +10,8 @@ type LinkType = 'category' | 'product' | 'custom';
 export default function BannerForm({ banner }: { banner?: Banner }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -28,7 +29,8 @@ export default function BannerForm({ banner }: { banner?: Banner }) {
     eyebrow: banner?.eyebrow || '',
     cta_text: banner?.cta_text || 'Ver más',
     cta_link: banner?.cta_link || '',
-    image_url: banner?.image_url || '',
+    image_url_mobile: banner?.image_url_mobile || '',
+    image_url_desktop: banner?.image_url_desktop || banner?.image_url || '',
     active: banner?.active ?? true,
     order: banner?.order || 99,
   });
@@ -38,31 +40,43 @@ export default function BannerForm({ banner }: { banner?: Banner }) {
     supabase.from('products').select('*').eq('active', true).order('name').then(({ data }) => setProducts(data || []));
   }, []);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'mobile' | 'desktop') => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    if (type === 'mobile') setUploadingMobile(true); else setUploadingDesktop(true);
     const url = await uploadImage(file, 'banners');
-    if (url) setForm({ ...form, image_url: url });
-    setUploading(false);
+    if (url) {
+      if (type === 'mobile') setForm({ ...form, image_url_mobile: url });
+      else setForm({ ...form, image_url_desktop: url });
+    }
+    if (type === 'mobile') setUploadingMobile(false); else setUploadingDesktop(false);
   };
 
-  const removeImage = async () => {
-    if (form.image_url) await deleteImage(form.image_url);
-    setForm({ ...form, image_url: '' });
+  const removeImage = async (type: 'mobile' | 'desktop') => {
+    const url = type === 'mobile' ? form.image_url_mobile : form.image_url_desktop;
+    if (url) await deleteImage(url);
+    if (type === 'mobile') setForm({ ...form, image_url_mobile: '' });
+    else setForm({ ...form, image_url_desktop: '' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.image_url) { alert('Subí una imagen primero'); return; }
+    if (!form.image_url_mobile && !form.image_url_desktop) {
+      alert('Subí al menos una imagen (mobile o desktop)');
+      return;
+    }
     setSaving(true);
+    // image_url se mantiene como fallback (la primera disponible)
+    const fallback = form.image_url_desktop || form.image_url_mobile;
     const payload = {
       title: form.title || null,
       subtitle: form.subtitle || null,
       eyebrow: form.eyebrow || null,
       cta_text: form.cta_text || null,
       cta_link: form.cta_link || null,
-      image_url: form.image_url,
+      image_url: fallback,
+      image_url_mobile: form.image_url_mobile || null,
+      image_url_desktop: form.image_url_desktop || null,
       active: form.active,
       order: Number(form.order),
     };
@@ -79,21 +93,40 @@ export default function BannerForm({ banner }: { banner?: Banner }) {
       <div className="mb-8">
         <button onClick={() => router.back()} className="text-[11px] tracking-[2px] uppercase text-gray hover:text-rose mb-2">← Volver</button>
         <h1 className="font-serif-c text-4xl font-light">{banner ? 'Editar banner' : 'Nuevo banner'}</h1>
-        <p className="text-gray text-sm mt-2">Recomendado: imagen vertical de 1200×1500px (diseñala en Canva).</p>
+        <p className="text-gray text-sm mt-2">Subí 2 versiones del banner: una horizontal para web y una vertical para celular.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 md:p-8 space-y-6">
+        {/* Imagen Desktop */}
         <div>
-          <label className="block text-[10px] tracking-[3px] uppercase text-gray mb-3">Imagen *</label>
-          {form.image_url ? (
-            <div className="relative aspect-[4/5] max-w-xs bg-cream group">
-              <img src={form.image_url} alt="" className="w-full h-full object-cover" />
-              <button type="button" onClick={removeImage} className="absolute top-2 right-2 bg-black text-white w-8 h-8 rounded-full">×</button>
+          <label className="block text-[10px] tracking-[3px] uppercase text-gray mb-1">Imagen Desktop (web)</label>
+          <p className="text-xs text-gray mb-3">Recomendado: 1920×800px horizontal</p>
+          {form.image_url_desktop ? (
+            <div className="relative aspect-[16/7] max-w-md bg-cream group">
+              <img src={form.image_url_desktop} alt="" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => removeImage('desktop')} className="absolute top-2 right-2 bg-black text-white w-8 h-8 rounded-full">×</button>
             </div>
           ) : (
-            <label className="block aspect-[4/5] max-w-xs border-2 border-dashed border-line flex items-center justify-center cursor-pointer hover:border-rose">
-              <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-              <span className="text-sm text-gray text-center">{uploading ? 'Subiendo...' : '+ Subir imagen'}</span>
+            <label className="block aspect-[16/7] max-w-md border-2 border-dashed border-line flex items-center justify-center cursor-pointer hover:border-rose">
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'desktop')} className="hidden" />
+              <span className="text-sm text-gray text-center">{uploadingDesktop ? 'Subiendo...' : '+ Subir imagen desktop'}</span>
+            </label>
+          )}
+        </div>
+
+        {/* Imagen Mobile */}
+        <div>
+          <label className="block text-[10px] tracking-[3px] uppercase text-gray mb-1">Imagen Mobile (celular)</label>
+          <p className="text-xs text-gray mb-3">Recomendado: 800×1200px vertical</p>
+          {form.image_url_mobile ? (
+            <div className="relative aspect-[2/3] max-w-[200px] bg-cream group">
+              <img src={form.image_url_mobile} alt="" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => removeImage('mobile')} className="absolute top-2 right-2 bg-black text-white w-8 h-8 rounded-full">×</button>
+            </div>
+          ) : (
+            <label className="block aspect-[2/3] max-w-[200px] border-2 border-dashed border-line flex items-center justify-center cursor-pointer hover:border-rose">
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'mobile')} className="hidden" />
+              <span className="text-sm text-gray text-center">{uploadingMobile ? 'Subiendo...' : '+ Subir mobile'}</span>
             </label>
           )}
         </div>
