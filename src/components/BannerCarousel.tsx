@@ -1,17 +1,46 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Banner } from '@/lib/types';
 
 export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (banners.length <= 1) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % banners.length), 5500);
+    if (banners.length <= 1 || paused) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % banners.length), 3500);
     return () => clearInterval(t);
-  }, [banners.length]);
+  }, [banners.length, paused]);
+
+  const next = () => setIndex((i) => (i + 1) % banners.length);
+  const prev = () => setIndex((i) => (i - 1 + banners.length) % banners.length);
+
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+    setPaused(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) {
+      setPaused(false);
+      return;
+    }
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipe = 50;
+    if (distance > minSwipe) next();
+    else if (distance < -minSwipe) prev();
+    setTimeout(() => setPaused(false), 3000);
+  };
 
   if (banners.length === 0) {
     return (
@@ -35,21 +64,43 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   const hasLink = !!current.cta_link;
 
   const BannerContent = (
-    <div className="relative w-full h-full min-h-[60vh] md:min-h-[85vh] overflow-hidden cursor-pointer">
-      {banners.map((b, i) => (
-        <Image
-          key={b.id}
-          src={b.image_url}
-          alt={b.title || ''}
-          fill
-          priority={i === 0}
-          sizes="100vw"
-          className={`object-cover transition-opacity duration-700 ${i === index ? 'opacity-100' : 'opacity-0'}`}
-        />
-      ))}
+    <div
+      className="relative w-full h-full min-h-[60vh] md:min-h-[75vh] overflow-hidden cursor-pointer select-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {banners.map((b, i) => {
+        const mobileSrc = b.image_url_mobile || b.image_url_desktop || b.image_url;
+        const desktopSrc = b.image_url_desktop || b.image_url_mobile || b.image_url;
+        return (
+          <div key={b.id} className={`absolute inset-0 transition-opacity duration-700 ${i === index ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Mobile */}
+            <Image
+              src={mobileSrc}
+              alt={b.title || ''}
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              className="object-cover md:hidden"
+            />
+            {/* Desktop */}
+            <Image
+              src={desktopSrc}
+              alt={b.title || ''}
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              className="object-cover hidden md:block"
+            />
+          </div>
+        );
+      })}
 
       {(current.title || current.subtitle || current.eyebrow) && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent flex items-end md:items-center z-10">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent flex items-end md:items-center z-10 pointer-events-none">
           <div className="w-full md:w-1/2 px-6 md:px-16 py-10 md:py-20 text-white">
             {current.eyebrow && (
               <div key={`eb-${index}`} className="text-[11px] tracking-[4px] uppercase mb-4 animate-fadeup-1">
@@ -75,6 +126,23 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
         </div>
       )}
 
+      {/* Flechas desktop */}
+      {banners.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full text-white text-2xl z-20 transition"
+            aria-label="Anterior"
+          >‹</button>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }}
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full text-white text-2xl z-20 transition"
+            aria-label="Siguiente"
+          >›</button>
+        </>
+      )}
+
+      {/* Dots */}
       {banners.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {banners.map((_, i) => (
