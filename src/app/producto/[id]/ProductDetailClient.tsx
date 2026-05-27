@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product, Category } from '@/lib/types';
@@ -20,6 +20,8 @@ export default function ProductDetailClient({
   const [size, setSize] = useState(product.sizes[0] || 'M');
   const [activeImg, setActiveImg] = useState(0);
   const [toast, setToast] = useState('');
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -38,26 +40,77 @@ export default function ProductDetailClient({
     showToast('Producto agregado al carrito');
   };
 
+  const next = () => setActiveImg((i) => (i + 1) % product.images.length);
+  const prev = () => setActiveImg((i) => (i - 1 + product.images.length) % product.images.length);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const distance = touchStartX.current - touchEndX.current;
+    if (distance > 50) next();
+    else if (distance < -50) prev();
+  };
+
   const whatsappMsg = encodeURIComponent(`Hola! Me interesa el producto: ${product.name} (Talle ${size}) — ${fmt(product.price)}`);
   const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP || '5492640000000';
 
   const hasImages = product.images && product.images.length > 0;
-  const mainImage = hasImages ? product.images[activeImg] : null;
+  const hasMultiple = hasImages && product.images.length > 1;
 
   return (
     <>
       <div className="max-w-[1400px] mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
         <div className="md:sticky md:top-24 md:self-start">
-          <div className="aspect-[3/4] bg-cream overflow-hidden mb-3 relative">
-            {mainImage ? (
-              <Image
-                src={mainImage}
-                alt={product.name}
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
+          {/* Imagen grande con swipe */}
+          <div
+            className="aspect-[3/4] bg-cream overflow-hidden mb-3 relative select-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {hasImages ? (
+              <>
+                {product.images.map((img, i) => (
+                  <Image
+                    key={i}
+                    src={img}
+                    alt={product.name}
+                    fill
+                    priority={i === 0}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className={`object-cover transition-opacity duration-300 ${i === activeImg ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                ))}
+
+                {/* Flechas desktop */}
+                {hasMultiple && (
+                  <>
+                    <button
+                      onClick={prev}
+                      className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white/70 hover:bg-white backdrop-blur-sm rounded-full text-black text-xl z-10 transition"
+                      aria-label="Anterior"
+                    >‹</button>
+                    <button
+                      onClick={next}
+                      className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white/70 hover:bg-white backdrop-blur-sm rounded-full text-black text-xl z-10 transition"
+                      aria-label="Siguiente"
+                    >›</button>
+                  </>
+                )}
+
+                {/* Contador */}
+                {hasMultiple && (
+                  <div className="md:hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 text-[11px] tracking-wider rounded-full backdrop-blur-sm">
+                    {activeImg + 1} / {product.images.length}
+                  </div>
+                )}
+              </>
             ) : (
               <div className={`ph ${phClass}`}>
                 <span className="ph-label">{product.name}</span>
@@ -65,13 +118,14 @@ export default function ProductDetailClient({
             )}
           </div>
 
-          {hasImages && product.images.length > 1 && (
+          {/* Miniaturas (siguen funcionando con click) */}
+          {hasMultiple && (
             <div className="grid grid-cols-4 gap-2">
               {product.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className={`aspect-square bg-cream overflow-hidden border relative ${i === activeImg ? 'border-rose' : 'border-transparent'}`}
+                  className={`aspect-square bg-cream overflow-hidden border-2 relative ${i === activeImg ? 'border-rose' : 'border-transparent'}`}
                 >
                   <Image
                     src={img}
