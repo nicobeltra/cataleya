@@ -6,13 +6,16 @@ const FIELDS = [
   { key: 'announce_text', label: 'Anuncio superior', type: 'text', section: 'General' },
   { key: 'footer_brand_tagline', label: 'Tagline del footer (ej: "Vestí tu esencia")', type: 'text', section: 'General' },
 
+  { key: 'marquee_active', label: 'Mostrar marquee (true/false)', type: 'text', section: 'Marquee (cinta de frases)' },
+  { key: 'marquee_items', label: 'Frases separadas por | (ej: "Envíos | 3 cuotas | Cambios")', type: 'textarea', section: 'Marquee (cinta de frases)' },
+
   { key: 'offer_title', label: 'Título banner ofertas', type: 'text', section: 'Banner Ofertas' },
   { key: 'offer_subtitle', label: 'Subtítulo banner ofertas', type: 'textarea', section: 'Banner Ofertas' },
 
   { key: 'whatsapp', label: 'WhatsApp (solo números con código país, ej: 5492640000000)', type: 'text', section: 'Contacto y redes' },
-  { key: 'whatsapp_url', label: 'URL completa de WhatsApp (opcional, sobrescribe la anterior)', type: 'text', section: 'Contacto y redes' },
+  { key: 'whatsapp_url', label: 'URL completa de WhatsApp (opcional)', type: 'text', section: 'Contacto y redes' },
   { key: 'instagram', label: 'Instagram (handle, ej: @cataleya)', type: 'text', section: 'Contacto y redes' },
-  { key: 'instagram_url', label: 'URL completa de Instagram (ej: https://instagram.com/cataleya)', type: 'text', section: 'Contacto y redes' },
+  { key: 'instagram_url', label: 'URL completa de Instagram', type: 'text', section: 'Contacto y redes' },
 
   { key: 'address', label: 'Dirección', type: 'text', section: 'Local' },
   { key: 'city', label: 'Ciudad/Provincia', type: 'text', section: 'Local' },
