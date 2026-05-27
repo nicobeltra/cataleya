@@ -18,30 +18,31 @@ export default async function Home() {
     getActiveBanners(),
   ]);
 
-  const marqueeItems = [
-    'Nuevos ingresos cada semana',
-    'Envíos a todo el país',
-    '3 cuotas sin interés',
-    'Cambios y devoluciones',
-  ];
+  const marqueeActive = config.marquee_active !== 'false';
+  const marqueeItems = (config.marquee_items || 'Nuevos ingresos cada semana|Envíos a todo el país|3 cuotas sin interés|Cambios y devoluciones')
+    .split('|')
+    .map(s => s.trim())
+    .filter(Boolean);
 
   return (
     <>
       <BannerCarousel banners={banners} />
 
-      <div className="bg-black text-white py-4 overflow-hidden whitespace-nowrap">
-        <div className="inline-block animate-scroll">
-          {[...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span key={i} className="font-serif-c italic text-base mx-7 tracking-[2px]">
-              {item}<span className="ml-14 text-rose not-italic">✦</span>
-            </span>
-          ))}
+      {marqueeActive && marqueeItems.length > 0 && (
+        <div className="bg-black text-white py-4 overflow-hidden whitespace-nowrap">
+          <div className="inline-block animate-scroll">
+            {[...marqueeItems, ...marqueeItems].map((item, i) => (
+              <span key={i} className="font-serif-c italic text-base mx-7 tracking-[2px]">
+                {item}<span className="ml-14 text-rose not-italic">✦</span>
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <section id="categorias" className="px-5 py-20 max-w-[1400px] mx-auto">
-        <div className="text-center mb-12">
-          <div className="text-[11px] tracking-[4px] uppercase text-gray mb-4">Explorá</div>
+      <section id="categorias" className="px-5 py-10 md:py-14 max-w-[1400px] mx-auto">
+        <div className="text-center mb-8 md:mb-10">
+          <div className="text-[11px] tracking-[4px] uppercase text-gray mb-3">Explorá</div>
           <h2 className="font-serif-c font-light leading-[1.1]" style={{ fontSize: 'clamp(32px, 5vw, 52px)' }}>
             Nuestras <em className="italic text-rose">categorías</em>
           </h2>
@@ -70,9 +71,9 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-5 py-20 max-w-[1400px] mx-auto">
-        <div className="text-center mb-12">
-          <div className="text-[11px] tracking-[4px] uppercase text-gray mb-4">Lo más buscado</div>
+      <section className="px-5 py-10 md:py-14 max-w-[1400px] mx-auto">
+        <div className="text-center mb-8 md:mb-10">
+          <div className="text-[11px] tracking-[4px] uppercase text-gray mb-3">Lo más buscado</div>
           <h2 className="font-serif-c font-light leading-[1.1]" style={{ fontSize: 'clamp(32px, 5vw, 52px)' }}>
             Productos <em className="italic text-rose">destacados</em>
           </h2>
@@ -82,16 +83,16 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="bg-black text-white px-5 py-20 text-center my-10 relative overflow-hidden">
+      <section className="bg-black text-white px-5 py-14 md:py-16 text-center my-6 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif-c italic opacity-5 tracking-[20px] whitespace-nowrap pointer-events-none" style={{ fontSize: 'clamp(120px, 28vw, 280px)' }}>
           OFERTAS
         </div>
         <div className="relative z-10">
-          <div className="text-[11px] tracking-[6px] uppercase text-rose mb-5">Tiempo limitado</div>
-          <h2 className="font-serif-c font-light mb-5" style={{ fontSize: 'clamp(42px, 8vw, 72px)' }}>
+          <div className="text-[11px] tracking-[6px] uppercase text-rose mb-4">Tiempo limitado</div>
+          <h2 className="font-serif-c font-light mb-4" style={{ fontSize: 'clamp(42px, 8vw, 72px)' }}>
             {config.offer_title || 'Hasta 40% OFF'}
           </h2>
-          <p className="max-w-[500px] mx-auto mb-9 text-sm text-white/70 px-5">
+          <p className="max-w-[500px] mx-auto mb-7 text-sm text-white/70 px-5">
             {config.offer_subtitle || 'Seleccionamos prendas únicas a precios irresistibles.'}
           </p>
           <Link href="/categoria/ofertas" className="inline-block bg-white text-black px-10 py-4 text-[11px] tracking-[3px] uppercase hover:bg-rose hover:text-white transition-colors">
@@ -100,8 +101,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="bg-cream px-5 py-20">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+      <section className="bg-cream px-5 py-12 md:py-14">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
           <div>
             <h4 className="font-serif-c text-2xl italic text-rose mb-4">Visitanos</h4>
             <div className="text-[10px] tracking-[3px] uppercase text-gray mb-1.5">Dirección</div>
