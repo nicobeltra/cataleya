@@ -21,28 +21,33 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/95 border-b border-line py-3.5 px-5">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-4">
-          <button
-            onClick={() => setOpen(true)}
-            className="md:hidden flex flex-col gap-1 p-2"
-            aria-label="Menú"
-          >
-            <span className="w-[22px] h-px bg-black" />
-            <span className="w-[22px] h-px bg-black" />
-            <span className="w-[22px] h-px bg-black" />
-          </button>
+        <div className="max-w-[1400px] mx-auto flex items-center">
+          {/* Izquierda */}
+          <div className="flex-1 flex items-center">
+            <button
+              onClick={() => setOpen(true)}
+              className="md:hidden flex flex-col gap-1 p-2"
+              aria-label="Menú"
+            >
+              <span className="w-[22px] h-px bg-black" />
+              <span className="w-[22px] h-px bg-black" />
+              <span className="w-[22px] h-px bg-black" />
+            </button>
 
-          <nav className="hidden md:flex gap-6 text-xs tracking-[2px] uppercase items-center">
-            <Link href="/categoria/novedades" className="hover:text-rose transition">Novedades</Link>
-            <Link href="/#categorias" className="hover:text-rose transition">Categorías</Link>
-            <Link href="/categoria/ofertas" className="hover:text-rose transition">Ofertas</Link>
-          </nav>
+            <nav className="hidden md:flex gap-6 text-xs tracking-[2px] uppercase items-center">
+              <Link href="/categoria/novedades" className="hover:text-rose transition">Novedades</Link>
+              <Link href="/#categorias" className="hover:text-rose transition">Categorías</Link>
+              <Link href="/categoria/ofertas" className="hover:text-rose transition">Ofertas</Link>
+            </nav>
+          </div>
 
-          <Link href="/" className="font-serif-c text-[22px] tracking-[6px] text-center text-black">
+          {/* Centro: logo */}
+          <Link href="/" className="font-serif-c text-[22px] tracking-[6px] text-center text-black px-4">
             CATALEYA
           </Link>
 
-          <nav className="flex gap-6 justify-end items-center text-xs tracking-[2px] uppercase">
+          {/* Derecha */}
+          <div className="flex-1 flex justify-end items-center text-xs tracking-[2px] uppercase">
             <Link href="/carrito" className="flex items-center gap-1.5 text-black hover:text-rose">
               <span className="hidden md:inline">Carrito</span>
               <span className="md:hidden">🛍</span>
@@ -50,7 +55,7 @@ export default function Header() {
                 {count}
               </span>
             </Link>
-          </nav>
+          </div>
         </div>
       </header>
 
